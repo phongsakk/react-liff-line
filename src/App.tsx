@@ -1,17 +1,23 @@
 import React from "react";
 import liff from "@line/liff";
+import { Profile } from "@liff/get-profile";
+import LogoutBtn from "./components/ui/LogoutBtn";
+import LoginBtn from "./components/ui/LoginBtn";
+import ProfileLine from "./components/ui/ProfileLine";
 
 function App() {
   const [message, setMessage] = React.useState<string>("");
   const [isLoggedIn, setIsloggedIn] = React.useState<boolean>(false);
+  const [user, setUser] = React.useState<Profile>();
 
   React.useEffect(() => {
     (async () => {
       //
-      liff.init({ liffId: import.meta.env.VITE_LIFF_ID }).then(() => {
+      liff.init({ liffId: import.meta.env.VITE_LIFF_ID }).then(async () => {
         setIsloggedIn(liff.isLoggedIn());
         if (liff.isLoggedIn()) {
           setMessage("welcome");
+          setUser(await liff.getProfile());
         } else {
           setMessage("You are not logged in");
         }
@@ -25,36 +31,16 @@ function App() {
         <h1>React & LIFF</h1>
         {message}
       </div>
-      <div>{isLoggedIn ? <LogoutBtn /> : <LoginBtn />}</div>
+      <div>
+        {isLoggedIn ? (
+          <LogoutBtn setIsloggedIn={setIsloggedIn} setUser={setUser} />
+        ) : (
+          <LoginBtn />
+        )}
+      </div>
+      <div>{user && <ProfileLine user={user!} />}</div>
     </div>
   );
 }
-
-const LoginBtn = () => {
-  const loginHandler = () => {
-    liff.login({redirectUri: import.meta.env.VITE_LIFF_CALLBACK});
-  };
-  return (
-    <button type="button" onClick={loginHandler}>
-      Login
-    </button>
-  );
-};
-
-type TLogoutBtnProps = {
-  label?: string;
-  children?: React.JSX.Element;
-};
-const LogoutBtn = (props: TLogoutBtnProps) => {
-  const logoutHandler = () => {
-    liff.logout();
-  };
-
-  return (
-    <button onClick={logoutHandler}>
-      {props.label || props.children || "Logout"}
-    </button>
-  );
-};
 
 export default App;
