@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Main from "./Main.routes";
+import Main from "./main.routes";
 
 const RoutesIndex = () => {
   return (
