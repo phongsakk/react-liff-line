@@ -1,35 +1,60 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from "react";
+import liff from "@line/liff";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [message, setMessage] = React.useState<string>("");
+  const [isLoggedIn, setIsloggedIn] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    (async () => {
+      //
+      liff.init({ liffId: import.meta.env.VITE_LIFF_ID }).then(() => {
+        setIsloggedIn(liff.isLoggedIn());
+        if (liff.isLoggedIn()) {
+          setMessage("welcome");
+        } else {
+          setMessage("You are not logged in");
+        }
+      });
+    })();
+  }, []);
 
   return (
-    <>
+    <div>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <h1>React & LIFF</h1>
+        {message}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      <div>{isLoggedIn ? <LogoutBtn /> : <LoginBtn />}</div>
+    </div>
+  );
 }
 
-export default App
+const LoginBtn = () => {
+  const loginHandler = () => {
+    liff.login({redirectUri: import.meta.env.VITE_LIFF_CALLBACK});
+  };
+  return (
+    <button type="button" onClick={loginHandler}>
+      Login
+    </button>
+  );
+};
+
+type TLogoutBtnProps = {
+  label?: string;
+  children?: React.JSX.Element;
+};
+const LogoutBtn = (props: TLogoutBtnProps) => {
+  const logoutHandler = () => {
+    liff.logout();
+  };
+
+  return (
+    <button onClick={logoutHandler}>
+      {props.label || props.children || "Logout"}
+    </button>
+  );
+};
+
+export default App;
